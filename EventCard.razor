@@ -1,0 +1,22 @@
+@using EventEase.Models
+@* Event Card component - Copilot generated @bind fields; I added validation messages. *@
+
+<div class="card">
+  <h3>@Event.Title</h3>
+  <p><strong>Date:</strong> @Event.Date.ToShortDateString()</p>
+  <p><strong>Location:</strong> @Event.Location</p>
+  <p>@Event.Description</p>
+  <a href="/events/@Event.Id">View details</a>
+  <hr />
+  <label>Title (two-way binding demo):
+    <input @bind="Event.Title" @bind:event="oninput" placeholder="Edit title" />
+  </label>
+  @if (string.IsNullOrWhiteSpace(Event.Title))
+  {
+    <p class="error">Title is required.</p>
+  }
+</div>
+
+@code {
+  [Parameter, EditorRequired] public EventItem Event { get; set; } = new();
+}

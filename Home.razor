@@ -1,0 +1,35 @@
+@page "/"
+@inject EventEase.Services.EventService Events
+@inject EventEase.Models.SessionState Session
+@* Home: event list + session state. Copilot scaffolded the loop; I added login/logout. *@
+
+<h1>EventEase</h1>
+@if (Session.IsLoggedIn)
+{
+  <p>Welcome, <strong>@Session.UserName</strong>! <button @onclick="Logout">Logout</button></p>
+}
+else
+{
+  <p>
+    <input @bind="loginName" placeholder="Enter name to log in" />
+    <button @onclick="Login">Login</button>
+  </p>
+  @if (loginError != "") { <p class="error">@loginError</p> }
+}
+
+@foreach (var e in Events.GetEvents())
+{
+  <EventCard Event="e" />
+}
+
+@code {
+  string loginName = "";
+  string loginError = "";
+  void Login()
+  {
+    if (loginName.Trim().Length < 2) { loginError = "Name min 2 chars."; return; }
+    Session.UserName = loginName.Trim();
+    loginError = "";
+  }
+  void Logout() => Session.UserName = null;
+}

@@ -1,0 +1,48 @@
+@page "/events/{Id:int}"
+@inject EventEase.Services.EventService Events
+@inject NavigationManager Nav
+@* Details + registration form + attendance tracker. Copilot helped with EditForm validation; I debugged the /events/{id} route. *@
+
+@if (ev is null)
+{
+  <p class="error">Event not found. <a href="/">Back home</a></p>
+}
+else
+{
+  <h2>@ev.Title</h2>
+  <p><strong>Date:</strong> @ev.Date.ToShortDateString() | <strong>Location:</strong> @ev.Location</p>
+  <p>@ev.Description</p>
+  <p><strong>Registered:</strong> @Events.RegistrationCount(ev.Id)</p>
+
+  <h3>Register</h3>
+  <input @bind="name" placeholder="Your name" />
+  <input @bind="email" placeholder="you@example.com" />
+  <button @onclick="Register">Submit</button>
+  @if (msg != "") { <p class="@msgClass">@msg</p> }
+
+  <h3>Attendees</h3>
+  @foreach (var r in Events.GetRegistrations(ev.Id))
+  {
+    <p>@r.Name (@r.Email) - @(Events.IsAttended(ev.Id, r.Email) ? "Present" : "Absent")
+      <button @onclick="() => Events.MarkAttended(ev.Id, r.Email)">Mark present</button>
+    </p>
+  }
+}
+
+@code {
+  [Parameter] public int Id { get; set; }
+  EventEase.Models.EventItem? ev;
+  string name = "", email = "", msg = "", msgClass = "";
+  protected override void OnParametersSet()
+  {
+    ev = Events.GetEvent(Id); // fixed routing: Id binds from /events/{Id:int}
+    if (ev is null) msg = "";
+  }
+  void Register()
+  {
+    var (ok, err) = Events.AddRegistration(new EventEase.Models.Registration { EventId = Id, Name = name, Email = email });
+    msg = ok ? "Registered!" : err;
+    msgClass = ok ? "success" : "error";
+    if (ok) { name = ""; email = ""; }
+  }
+}
